@@ -1,0 +1,52 @@
+---
+services:
+  valkey:
+    image: bitnami/valkey:latest
+    container_name: todo-valkey
+    restart: always
+    environment:
+      - VALKEY_PASSWORD=TestingThisShitYo
+      - VALKEY_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - 6379:6379
+    volumes:
+      - "valkey_data:/bitnami/valkey/data"
+    networks:
+      - todo_network
+
+  nginx:
+    image: nginx:latest
+    container_name: todo-nginx
+    restart: always
+    ports:
+      - 8080:8080
+    volumes:
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - todo_network
+
+  todo-app:
+    image: golang:latest
+    container_name: todo-valkey-go
+    restart: always
+    environment:
+      VALKEY_SERVER: valkey
+      VALKEY_PASSWORD: TestingThisShitYo
+    ports:
+      - 3000:3000
+    volumes:
+      - ./todo:/opt/todo
+    command: /opt/todo
+    depends_on:
+      - nginx
+      - valkey
+    networks:
+      - todo_network
+
+volumes:
+  valkey_data:
+    driver: local
+
+networks:
+  todo_network:
+    driver: bridge
