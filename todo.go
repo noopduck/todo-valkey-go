@@ -183,17 +183,16 @@ func getInterNetworkInterface() string {
 
 func main() {
 	client := setupValkey()
-
 	appCtx := &AppContext{
 		c: client,
 	}
-
-	iface := getInterNetworkInterface()
-	fmt.Println("Trying to listen to: " + iface)
 
 	http.HandleFunc("/", appCtx.emptyPage)
 	http.HandleFunc("/listKeys", appCtx.listKeys)
 	http.HandleFunc("/getItem", appCtx.getItem)
 	http.HandleFunc("/addItem", appCtx.addItem)
-	http.ListenAndServe(iface+"3000", nil)
+
+	iface := getInterNetworkInterface()
+	fmt.Println("Trying to listen to: " + iface)
+	http.ListenAndServe(iface+":3000", nil)
 }
