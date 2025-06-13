@@ -39,8 +39,6 @@ This project is a Todo application that utilizes Valkey for backend storage and 
     ```bash
     curl -X POST localhost:3000/addItem -H "Content-Type: application/json" -d '{ "Description": "Need to prettify error handling and add authentication eventually", "Status": 2 }'
     ```
-
-  ```
   - `GET /getItem?uuid=<UUID>`: Retrieve a specific todo item by its UUID.
 
 ## Contributing
