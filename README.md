@@ -25,6 +25,12 @@ This project is a Todo application that utilizes Valkey for backend storage and 
 2. Ensure you have Docker and Docker Compose installed.
 3. Start the application using Docker Compose:
 
+   First compile the go project:
+   ```bash
+   CGO_ENABLED=0 go build todo.go
+   ```
+
+   Start it using:
    ```bash
    docker-compose up
    ```
