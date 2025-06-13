@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 
@@ -116,9 +117,13 @@ func (appCtx AppContext) getItem(writer http.ResponseWriter, request *http.Reque
 	writer.Write([]byte(entryInString))
 }
 
+func (cx AppContext) emptyPage(writer http.ResponseWriter, request *http.Request) {
+	http.Error(writer, "Empty page mother fucker", http.StatusMethodNotAllowed)
+}
+
 func getEnvironment() (string, string) {
 	server := cmp.Or(os.Getenv("VALKEY_SERVER"), "localhost")
-	password := cmp.Or(os.Getenv("VALKEY_PASSWORD"), "")
+	password := cmp.Or(os.Getenv("VALKEY_PASSWORD"), "TestingThisShitYo")
 	if password == "" {
 		fmt.Println("Environment variable VALKEY_PASSWORD is not set")
 		os.Exit(1)
@@ -149,8 +154,31 @@ func setupValkey() valkey.Client {
 	return client
 }
 
-func (cx AppContext) emptyPage(writer http.ResponseWriter, request *http.Request) {
-	http.Error(writer, "Empty page mother fucker", http.StatusMethodNotAllowed)
+func getInterNetworkInterface() string {
+	var ifaces []net.Interface
+	var err error
+	if ifaces, err = net.Interfaces(); err != nil {
+		fmt.Println("Assigning interfaces from net.Interfaces() failed")
+	}
+
+	for _, iface := range ifaces {
+		addrs, err := iface.Addrs()
+		if err != nil {
+			fmt.Println("Couldn't obtain addresses from the interface")
+		}
+		if iface.Name == "lo" {
+			continue
+		}
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok {
+				ip := ipnet.IP
+				if !ip.IsLoopback() && !ip.IsLinkLocalUnicast() {
+					return ip.String()
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func main() {
@@ -160,9 +188,12 @@ func main() {
 		c: client,
 	}
 
+	iface := getInterNetworkInterface()
+	fmt.Println("Trying to listen to: " + iface)
+
 	http.HandleFunc("/", appCtx.emptyPage)
 	http.HandleFunc("/listKeys", appCtx.listKeys)
 	http.HandleFunc("/getItem", appCtx.getItem)
 	http.HandleFunc("/addItem", appCtx.addItem)
-	http.ListenAndServe("0.0.0.0:3000", nil)
+	http.ListenAndServe(iface+"3000", nil)
 }
