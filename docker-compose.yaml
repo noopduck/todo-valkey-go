@@ -26,7 +26,7 @@ services:
       - todo_network
 
   todo-app:
-    image: golang:latest
+    image: alpine:latest
     container_name: todo-valkey-go
     restart: always
     environment:
