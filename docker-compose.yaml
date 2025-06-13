@@ -32,8 +32,6 @@ services:
     environment:
       VALKEY_SERVER: valkey
       VALKEY_PASSWORD: TestingThisShitYo
-    ports:
-      - 3000:3000
     volumes:
       - ./todo:/opt/todo
     command: /opt/todo
